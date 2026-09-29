@@ -12,3 +12,9 @@ At 1920×1080 it matches the Figma masters cell for cell (ASSETS → "BIT FIELD"
 The field data comes from `tools/patterns/bitfield.py` in the brand project.
 
 Static single file: `index.html`, no build step.
+
+## Protocol hero mockup
+
+`protocol-hero/` is a mockup of the orbio.so/protocol hero on a dimmed 20px bit field. Text blocks knock the field out on whole cells; the marble hand holding CREDIT leads. The Void and Marble variants toggle bottom-right (`H` hides the switch).
+
+The headline is outlined from ABC Arizona Flare (Dinamo trial). License it before production use.
