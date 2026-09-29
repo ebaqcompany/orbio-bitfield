@@ -65,8 +65,9 @@ body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(
 :root[data-page="home"] .lockup .wm { transform: translate(129.48px, 27.7px); }   /* master lockup: wordmark centred on the orb */
 :root[data-page="home"] .lockup svg { height: 40px; }   /* master lockup = 2 cells tall, so its knock-out is 4 cells (descriptor lockups: 5) */
 .links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-.link { font: 500 13px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--fg); background: none; border: 0; height: 40px; padding: 0 calc(12px - .18em) 0 12px; display: inline-flex; align-items: center; cursor: pointer; border-radius: 8px; transition: background-color .16s cubic-bezier(.23, 1, .32, 1), color .16s cubic-bezier(.23, 1, .32, 1); }
-.link:hover, .nav .btn:hover, .ctas .btn:not(.btn-primary):hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.link { font: 500 13px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--fg); background: none; border: 0; height: 40px; padding: 0 calc(12px - .18em) 0 12px; display: inline-flex; align-items: center; cursor: pointer; border-radius: 8px; transition: color .16s cubic-bezier(.23, 1, .32, 1); }
+.link:hover { color: var(--accent); }   /* menu items: the text takes the accent, no fill */
+.nav .btn:hover, .ctas .btn:not(.btn-primary):hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 .btn {
   font: 500 13px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; cursor: pointer;
@@ -80,7 +81,7 @@ body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(
 .btn .arr { font-size: 14px; letter-spacing: 0; }
 
 .content {
-  position: relative; z-index: 2; display: grid; gap: 40px; align-content: center;
+  position: relative; z-index: 2; display: grid; gap: 64px; align-content: center;
   min-height: calc(100% - 88px); padding: 120px 60px 140px; box-sizing: border-box; max-width: 940px;
 }
 .block { justify-self: start; }
@@ -94,8 +95,7 @@ h1 { margin: 0; font-weight: 400; }
 .hl .gap { flex: none; }
 .mark { display: flex; align-items: center; background: var(--accent); padding: 0 calc(var(--display-h) * .06); margin-left: calc(var(--display-h) * -.06); }
 .mark svg { fill: var(--on-accent); }
-.sub { margin: 0 0 28px; max-width: 30ch; font-size: 20px; line-height: 1.45; color: var(--muted); text-wrap: balance; }
-.sub-wide { max-width: 44ch; }
+.sub { margin: 0 0 28px; max-width: 34em; font-size: 20px; line-height: 1.45; color: var(--muted); text-wrap: balance; }
 .ctas { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* home: the Buy credits card from the slide stands in for the CTA row */
@@ -104,16 +104,21 @@ h1 { margin: 0; font-weight: 400; }
 .tab { position: relative; font: 500 15px/1 var(--sans); letter-spacing: -.01em; padding: 0 0 12px; }
 .tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 3px; border-radius: 2px; background: var(--accent); }
 .flabel { display: block; margin: 16px 0 8px; font: 400 13px/1.2 var(--sans); color: var(--label); }
-.frow { display: flex; gap: 9px; }
-.amount { flex: 1; min-width: 0; height: 54px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 14px; background: var(--field); border: 1px solid var(--card-line); }
+.frow { display: flex; gap: 9px; align-items: flex-end; }
+.fcol { min-width: 0; }
+.fcol-amount { flex: 0 0 132px; }
+.fcol-save { flex: 1; }
+.amount { height: 54px; box-sizing: border-box; display: flex; align-items: center; gap: 8px; padding: 0 16px; border-radius: 14px; background: var(--field); border: 1px solid var(--card-line); }
 .amount .cur { font: 400 21px/1 var(--mono); color: var(--label); }
-.amount .val { font: 500 29px/1 var(--mono); letter-spacing: -.03em; color: var(--fg); }
-.buy { flex: none; width: 195px; height: 54px; border-radius: 11px; cursor: pointer; background: var(--accent); border: 1px solid #CC6E32; color: #14120E; font: 500 14px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 28px -14px rgba(255, 137, 63, .9); }
+.amount .val, .save .val { font: 500 29px/1 var(--mono); letter-spacing: -.03em; color: var(--fg); }
+.save { height: 54px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 12px 0 16px; border-radius: 14px; border: 1px solid var(--card-line); }
+.chip { flex: none; font: 500 11px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; padding: 6px 8px; border-radius: 6px; background: var(--accent); color: var(--on-accent); }
+.buy { flex: none; width: 150px; height: 54px; border-radius: 11px; cursor: pointer; background: var(--accent); border: 1px solid #CC6E32; color: #14120E; font: 500 14px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 28px -14px rgba(255, 137, 63, .9); }
 
 .visual { position: absolute; z-index: 1; bottom: 0; margin: 0; pointer-events: none; }
 .visual img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; display: block; }
-.visual-hand { right: -3vw; height: min(80%, 780px); aspect-ratio: 1271 / 1300; max-width: 54vw; }
-.visual-apollo { right: 7vw; height: min(86%, 820px); aspect-ratio: 1080 / 1700; max-width: 38vw; }
+.visual-philosopher { right: 4vw; height: min(86%, 820px); aspect-ratio: 1266 / 1700; max-width: 44vw; }
+.visual-apollo { right: 3vw; height: min(86%, 820px); aspect-ratio: 1080 / 1700; max-width: 38vw; }
 .visual-hypatia { right: 0; height: min(86%, 820px); aspect-ratio: 1257 / 1700; max-width: 42vw; }   /* the cut column runs off the right edge */
 
 .switch {
@@ -132,12 +137,15 @@ h1 { margin: 0; font-weight: 400; }
   .nav { padding: 20px 20px 0; }   /* keep the lockup on the 20px grid */
   .lockup svg { height: 40px; }
   .links .link:not(:last-child) { display: none; }
-  .content { padding: 80px 20px 0; min-height: 0; gap: 28px; }
+  .content { padding: 80px 20px 0; min-height: 0; gap: 64px; }
   .card { width: 100%; }
   .frow { flex-wrap: wrap; }
+  .fcol-amount { flex: 0 0 104px; }
+  .fcol-save { flex: 1 1 0; }
+  .amount .val, .save .val { font-size: 24px; }
   .buy { width: 100%; }
   .visual { position: relative; right: auto !important; display: block; margin: 12px 0 0 auto; }
-  .visual-hand { height: auto; width: min(92%, 520px); max-width: none; }
+  .visual-philosopher { height: auto; width: min(92%, 460px); max-width: none; margin-right: 4%; }
   .visual-apollo { height: auto; width: min(80%, 400px); max-width: none; margin-right: 6%; }
   .visual-hypatia { height: auto; width: min(96%, 460px); max-width: none; margin-right: 0; }
 }
@@ -173,12 +181,18 @@ h1 { margin: 0; font-weight: 400; }
       </h1>
     </div>
     <div class="block" data-cover data-for="home">
-      <p class="sub sub-wide">LLM credits at a discount. No subscriptions.<br>Change two lines · Keep your code · Pay less on every call.</p>
+      <p class="sub">LLM credits at a discount. No subscriptions.<br>Change two lines · Keep your code · Pay less on every call.</p>
       <div class="card" id="card">
       <div class="tabs"><span class="tab">Buy credits</span></div>
-      <span class="flabel" id="amount-label">Credits worth</span>
       <div class="frow">
-        <div class="amount" role="group" aria-labelledby="amount-label"><span class="cur" aria-hidden="true">$</span><span class="val" id="amount">20</span></div>
+        <div class="fcol fcol-amount">
+          <span class="flabel" id="amount-label">Credits worth</span>
+          <div class="amount" role="group" aria-labelledby="amount-label"><span class="cur" aria-hidden="true">$</span><span class="val">20</span></div>
+        </div>
+        <div class="fcol fcol-save">
+          <span class="flabel" id="save-label">You save</span>
+          <div class="save" role="group" aria-labelledby="save-label"><span class="val">$3.00</span><span class="chip">15% off</span></div>
+        </div>
         <button class="buy" type="button">Buy</button>
       </div>
       </div>
@@ -193,7 +207,7 @@ h1 { margin: 0; font-weight: 400; }
       </h1>
     </div>
     <div class="block" data-cover data-for="protocol">
-      <p class="sub">Earn, Swap or Transfer tokenized inference with $Credit</p>
+      <p class="sub">Earn, swap or transfer tokenized inference with $CREDIT.<br>1 CREDIT = $1 of AI usage · Earned hourly · Settled onchain.</p>
       <div class="ctas">
         <button class="btn btn-primary" type="button">Explore CREDIT <span class="arr" aria-hidden="true">→</span></button>
         <button class="btn" type="button">For agents <span class="arr" aria-hidden="true">↘</span></button>
@@ -208,7 +222,7 @@ h1 { margin: 0; font-weight: 400; }
       </h1>
     </div>
     <div class="block" data-cover data-for="launchpad">
-      <p class="sub">Your agent earns AI inference while its $ORBIO stake grows.</p>
+      <p class="sub">Your agent earns AI inference while its $ORBIO stake grows.<br>Launch on Pons · Paired with $ORBIO · Tools metered in $CREDIT.</p>
       <div class="ctas">
         <button class="btn btn-primary" type="button">Launch an agent <span class="arr" aria-hidden="true">↗</span></button>
         <button class="btn" type="button">View dashboard <span class="arr" aria-hidden="true">↗</span></button>
@@ -216,9 +230,9 @@ h1 { margin: 0; font-weight: 400; }
     </div>
   </div>
 
-  <figure class="visual visual-hypatia" data-for="home"><img src="marble-hypatia-coins.webp" alt="Marble Hypatia leaning on a column, holding a stack of CREDIT coins" width="1257" height="1700"></figure>
-  <figure class="visual visual-hand" data-for="protocol"><img src="marble-hand-credit.webp" alt="Marble hand holding a stack of CREDIT coins" width="1271" height="1300"></figure>
-  <figure class="visual visual-apollo" data-for="launchpad"><img src="marble-apollo-torso.webp" alt="Marble Apollo raising the Orbio orb" width="1080" height="1700"></figure>
+  <figure class="visual visual-philosopher" data-for="home"><img src="marble-philosopher.webp" alt="Marble philosopher resting his chin on his fist, a scroll on his lap" width="1266" height="1700"></figure>
+  <figure class="visual visual-hypatia" data-for="protocol"><img src="marble-hypatia-coins.webp" alt="Marble Hypatia leaning on a column, holding a stack of CREDIT coins" width="1257" height="1700"></figure>
+  <figure class="visual visual-apollo" data-for="launchpad"><img src="marble-apollo-facing.webp" alt="Marble Apollo raising the Orbio orb" width="1080" height="1700"></figure>
 
 </main>
 
@@ -340,17 +354,29 @@ h1 { margin: 0; font-weight: 400; }
     return l === Infinity ? el.getBoundingClientRect() : { left: l, top: t, right: r, bottom: b };
   }
   // Each visible [data-cover] element clears whole cells: its ink plus one cell of air (data-cover-y sets the
-  // vertical air), rounded out to the grid.
+  // vertical air), rounded out to the grid. The left edge comes from the element's own box, not its ink, so every
+  // frame in the column shares one left edge (the headline marker's small overhang sits inside the air cell).
   function measureCovers() {
-    const hr = hero.getBoundingClientRect(); covers = []; cleared.fill(0);
+    const hr = hero.getBoundingClientRect(), stack = []; covers = []; cleared.fill(0);
     for (const el of document.querySelectorAll("[data-cover]")) {
       if (!el.getClientRects().length) continue;
-      const b = contentRect(el), ay = el.dataset.coverY !== undefined ? +el.dataset.coverY : 1;
-      const x0 = Math.max(0, Math.floor((b.left - hr.left) / CELL) - 1), y0 = Math.max(0, Math.floor((b.top - hr.top) / CELL) - ay);
-      const x1 = Math.min(cols, Math.ceil((b.right - hr.left) / CELL) + 1), y1 = Math.min(rows, Math.ceil((b.bottom - hr.top) / CELL) + ay);
-      covers.push([x0, y0, x1, y1]);
-      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) cleared[y * cols + x] = 1;
+      const b = contentRect(el), left = Math.max(b.left, el.getBoundingClientRect().left), ay = el.dataset.coverY !== undefined ? +el.dataset.coverY : 1;
+      const top = b.top - hr.top, bottom = b.bottom - hr.top;
+      const c = [Math.max(0, Math.floor((left - hr.left) / CELL) - 1), Math.max(0, Math.floor(top / CELL) - ay),
+                 Math.min(cols, Math.ceil((b.right - hr.left) / CELL) + 1), Math.min(rows, Math.ceil(bottom / CELL) + ay)];
+      covers.push(c);
+      if (el.closest(".content")) stack.push({ c, top, bottom });
     }
+    // Stacked frames in the text column sit exactly one grid row apart (headline / paragraph): a wider gap pulls the
+    // lower frame up; a narrower one trims air (never ink), first under the upper frame, then over the lower one.
+    stack.sort((p, q) => p.c[1] - q.c[1]);
+    for (let i = 1; i < stack.length; i++) {
+      const a = stack[i - 1], b = stack[i];
+      if (b.c[1] - a.c[3] > 1) b.c[1] = a.c[3] + 1;
+      while (b.c[1] - a.c[3] < 1 && (a.c[3] - 1) * CELL >= a.bottom) a.c[3]--;
+      while (b.c[1] - a.c[3] < 1 && (b.c[1] + 1) * CELL <= b.top) b.c[1]++;
+    }
+    for (const [x0, y0, x1, y1] of covers) for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) cleared[y * cols + x] = 1;
   }
 
   function paint() {
@@ -440,15 +466,16 @@ h1 { margin: 0; font-weight: 400; }
   window.addEventListener("resize", relayout);
   if (window.ResizeObserver) new ResizeObserver(relayout).observe(hero);
 
-  // Logo: the orb spins only while hovered (precise 6 s loop, 30 fps sprite); on leave it finishes the turn to rest.
+  // Logo: the orb spins only while hovered (180-frame sprite of the precise loop, one turn in 4 s); on leave it
+  // finishes the turn at the same speed and rests on frame 0, the static orb.
   const lockupEl = document.querySelector(".lockup"), orbCv = lockupEl.querySelector(".orb-spin"), octx = orbCv.getContext("2d");
-  const SPR = { cols: 15, fw: 112, fh: 100, frames: 180, ms: 1000 / 30 };
+  const SPR = { cols: 15, fw: 112, fh: 100, frames: 180, ms: 4000 / 180 };
   let sprite = null, orbFrame = 0, orbHover = false, orbRun = false, orbLast = 0;
   function drawOrb(f) { octx.clearRect(0, 0, SPR.fw, SPR.fh); octx.drawImage(sprite, (f % SPR.cols) * SPR.fw, Math.floor(f / SPR.cols) * SPR.fh, SPR.fw, SPR.fh, 0, 0, SPR.fw, SPR.fh); }
   function orbTick(now) {
-    const step = orbHover ? SPR.ms : SPR.ms / 2, adv = Math.floor((now - orbLast) / step);
+    const adv = Math.floor((now - orbLast) / SPR.ms);
     if (adv > 0) {
-      orbLast += adv * step; const next = orbFrame + adv;
+      orbLast += adv * SPR.ms; const next = orbFrame + adv;
       if (!orbHover && next >= SPR.frames) { orbFrame = 0; drawOrb(0); orbRun = false; return; }
       orbFrame = next % SPR.frames; drawOrb(orbFrame);
     }
@@ -470,6 +497,10 @@ h1 { margin: 0; font-weight: 400; }
   setPlaying(playing);
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measureCovers(); paint(); });
+  if (window.ResizeObserver) {   // covers follow their blocks when they reflow (a web font swapping in, a new wrap)
+    const ro = new ResizeObserver(() => { if (cleared) { measureCovers(); paint(); } });
+    for (const el of document.querySelectorAll("[data-cover]")) ro.observe(el);
+  }
   requestAnimationFrame(frame);
 })();
 </script>
