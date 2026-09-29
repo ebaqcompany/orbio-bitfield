@@ -13,8 +13,13 @@ The field data comes from `tools/patterns/bitfield.py` in the brand project.
 
 Static single file: `index.html`, no build step.
 
-## Protocol hero mockup
+## Hero mockups (Protocol + Launchpad)
 
-`protocol-hero/` is a mockup of the orbio.so/protocol hero on a dimmed 20px bit field. Text blocks knock the field out on whole cells; the marble hand holding CREDIT leads. The Void and Marble variants toggle bottom-right (`H` hides the switch).
+`protocol-hero/` holds both sub-brand heroes on a dimmed 20px bit field. Text blocks knock the field out on whole cells.
 
-The headline is outlined from ABC Arizona Flare (Dinamo trial). License it before production use.
+- **Protocol** (`#protocol`): ORBIO MARKETPLACE lockup, Brass, marble hand holding CREDIT
+- **Launchpad** (`#launchpad`, or `launchpad-hero/`): ORBIO LAUNCHPAD lockup, Celeste, marble Apollo raising the orb
+
+Marble is the default variant; Void is the dark one. The switch sits bottom-right (`H` hides it). Copy is verbatim from orbio.so.
+
+The headlines and wordmark are outlined from ABC Arizona Flare (Dinamo trial). License it before production use.
