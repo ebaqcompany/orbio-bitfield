@@ -17,7 +17,7 @@ Static single file: `index.html`, no build step.
 
 `protocol-hero/` holds both sub-brand heroes on a dimmed 20px bit field. Text blocks knock the field out on whole cells.
 
-- **Home** (`#home`, or `home-hero/`): ORBIO master lockup, Vein accent, marble Hypatia, the Buy credits card framed by construction guides
+- **Home** (`#home`, or `home-hero/`): ORBIO master lockup (2 grid cells tall), Vein accent, the Buy credits card, marble Hypatia; same layout as the other views
 - **Protocol** (`#protocol`): ORBIO MARKETPLACE lockup, Brass, marble hand holding CREDIT
 - **Launchpad** (`#launchpad`, or `launchpad-hero/`): ORBIO LAUNCHPAD lockup, Celeste, marble Apollo raising the orb
 
