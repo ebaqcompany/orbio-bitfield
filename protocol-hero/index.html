@@ -120,8 +120,8 @@ h1 { margin: 0; font-weight: 400; }
 .visual { position: absolute; z-index: 1; bottom: 0; margin: 0; pointer-events: none; }
 .visual img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; display: block; }
 .visual-philosopher { right: 4vw; height: min(86%, 820px); aspect-ratio: 1266 / 1700; max-width: 44vw; }
-.visual-apollo { --top: 44px; right: 3vw; height: calc(100% - var(--top)); aspect-ratio: 1080 / 1700; }   /* the orb comes out from under the menu band (y 40–80) */
-.visual-hypatia { right: 0; height: min(86%, 820px); aspect-ratio: 1257 / 1700; max-width: 42vw; }   /* the cut column runs off the right edge */
+.visual-apollo { --top: 44px; right: 4vw; height: calc(100% - var(--top)); aspect-ratio: 1080 / 1700; }   /* full height; the ring's end tucks under the menu band's left end */
+.visual-hypatia { right: 4vw; height: min(86%, 820px); aspect-ratio: 1282 / 1700; max-width: 42vw; }   /* the whole column in frame, 4vw from the edge */
 .visual-veiled { right: 4vw; height: min(86%, 820px); aspect-ratio: 1028 / 1700; max-width: 44vw; }
 
 /* nav plates: the menu frame's ground, above the marble layer, so the band covers a statue that reaches up behind it */
@@ -238,7 +238,7 @@ h1 { margin: 0; font-weight: 400; }
   </div>
 
   <figure class="visual visual-philosopher" data-for="home"><img src="marble-philosopher.webp" alt="Marble philosopher resting his chin on his fist, a scroll on his lap" width="1266" height="1700"></figure>
-  <figure class="visual visual-hypatia" data-for="protocol"><img src="marble-hypatia-coins.webp" alt="Marble Hypatia leaning on a column, holding a stack of CREDIT coins" width="1257" height="1700"></figure>
+  <figure class="visual visual-hypatia" data-for="protocol"><img src="marble-hypatia-column.webp" alt="Marble Hypatia leaning on a column, holding a stack of CREDIT coins" width="1282" height="1700"></figure>
   <figure class="visual visual-veiled" data-for="incognito"><img src="marble-veiled.webp" alt="Marble statue of a veiled woman, her face under a sheer veil" width="1028" height="1700"></figure>
   <figure class="visual visual-apollo" data-for="launchpad"><img src="marble-apollo-facing.webp" alt="Marble Apollo raising the Orbio orb" width="1080" height="1700"></figure>
 
@@ -351,7 +351,7 @@ h1 { margin: 0; font-weight: 400; }
   // vertical air), rounded out to the grid. The left edge comes from the element's own box, not its ink, so every
   // frame in the column shares one left edge (the headline marker's small overhang sits inside the air cell).
   function measureCovers() {
-    const hr = hero.getBoundingClientRect(), stack = [], navCovers = []; let band = null; covers = []; cleared.fill(0);
+    const hr = hero.getBoundingClientRect(), stack = [], navCovers = []; covers = []; cleared.fill(0);
     for (const el of document.querySelectorAll("[data-cover]")) {
       if (!el.getClientRects().length) continue;
       const b = contentRect(el), left = Math.max(b.left, el.getBoundingClientRect().left), ay = el.dataset.coverY !== undefined ? +el.dataset.coverY : 1;
@@ -361,7 +361,6 @@ h1 { margin: 0; font-weight: 400; }
       covers.push(c);
       if (el.closest(".content")) stack.push({ c, top, bottom });
       if (el.closest(".nav")) navCovers.push(c);
-      if (el.classList.contains("links")) band = c;
     }
     // Stacked frames in the text column sit exactly one grid row apart (headline / paragraph): a wider gap pulls the
     // lower frame up; a narrower one trims air (never ink), first under the upper frame, then over the lower one.
@@ -373,7 +372,7 @@ h1 { margin: 0; font-weight: 400; }
       while (b.c[1] - a.c[3] < 1 && (b.c[1] + 1) * CELL <= b.top) b.c[1]++;
     }
     for (const [x0, y0, x1, y1] of covers) for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) cleared[y * cols + x] = 1;
-    placePlates(navCovers); placeApollo(band);
+    placePlates(navCovers);
   }
 
   // The nav frames also get a ground-coloured plate above the marble layer (inside the grid line, like the knock-out),
@@ -389,17 +388,6 @@ h1 { margin: 0; font-weight: 400; }
       p.style.width = (x1 - x0) * CELL - lw + "px"; p.style.height = (y1 - y0) * CELL - lw + "px";
     });
     for (let i = list.length; i < plates.length; i++) plates[i].hidden = true;
-  }
-
-  // Launchpad on desktop: Apollo stands full height and his orb tucks under the menu band. His left edge (the ring tip)
-  // goes 12px inside the band's left end; he may run off the right edge, but his head (which ends at 85% of his
-  // width) stays at least 20px inside.
-  const apollo = document.querySelector(".visual-apollo");
-  function placeApollo(band) {
-    apollo.style.right = "";
-    if (page !== "launchpad" || !band || matchMedia("(max-width: 900px)").matches) return;
-    const w = apollo.getBoundingClientRect().width, hw = hero.getBoundingClientRect().width;
-    apollo.style.right = Math.max(20 - 0.15 * w, hw - (band[0] * CELL + 12) - w) + "px";
   }
 
   function paint() {
