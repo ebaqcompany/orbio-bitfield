@@ -20,7 +20,6 @@
   --accent: #E6BC7A;          /* Brass: Marketplace / CREDIT */
   --on-accent: #0B0B0C;       /* black type on colour */
   --eyebrow: #14120E;
-  --panel: rgba(255, 250, 238, .9);
   --card: #FFFDF8;
   --card-line: rgba(139, 109, 68, .22);
   --field: rgba(243, 239, 231, .6);
@@ -39,7 +38,6 @@
   --muted: rgba(255, 250, 238, .7);
   --line: rgba(255, 250, 238, .16);
   --eyebrow: var(--accent);
-  --panel: rgba(11, 11, 12, .88);
   --card: #141312;
   --card-line: rgba(255, 250, 238, .14);
   --field: rgba(255, 250, 238, .05);
@@ -64,9 +62,14 @@ body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(
 .lockup svg { height: 48px; width: auto; display: block; overflow: visible; }
 :root[data-page="home"] .lockup .wm { transform: translate(129.48px, 27.7px); }   /* master lockup: wordmark centred on the orb */
 :root[data-page="home"] .lockup svg { height: 40px; }   /* master lockup = 2 cells tall, so its knock-out is 4 cells (descriptor lockups: 5) */
-.links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.links { display: flex; align-items: center; gap: clamp(4px, calc(4px + (100vw - 1440px) * .1), 28px); flex-wrap: wrap; }   /* airier on wide screens, so the band reaches Apollo's orb */
+.mode { display: flex; gap: 4px; }
 .link { font: 500 13px/1 var(--mono); letter-spacing: .18em; text-transform: uppercase; color: var(--fg); background: none; border: 0; height: 40px; padding: 0 calc(12px - .18em) 0 12px; display: inline-flex; align-items: center; cursor: pointer; border-radius: 8px; transition: color .16s cubic-bezier(.23, 1, .32, 1); }
+.link { position: relative; text-decoration: none; }
 .link:hover { color: var(--accent); }   /* menu items: the text takes the accent, no fill */
+.link[aria-current="page"], .link[aria-pressed="true"] { color: var(--fg); cursor: default; }
+.link[aria-current="page"]::after, .link[aria-pressed="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 10px; height: 2px; background: var(--accent); }   /* the current page / mode, like the card's tab */
+.links .vr { flex: none; width: 1px; height: 16px; margin: 0 8px; background: var(--line); }
 .nav .btn:hover, .ctas .btn:not(.btn-primary):hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 
 .btn {
@@ -77,7 +80,7 @@ body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(
 .btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .btn-small { height: 40px; padding: 0 calc(14px - .18em) 0 14px; border-radius: 8px; }
 .btn { transition: background-color .16s cubic-bezier(.23, 1, .32, 1), border-color .16s cubic-bezier(.23, 1, .32, 1), color .16s cubic-bezier(.23, 1, .32, 1); }
-.btn:focus-visible, .link:focus-visible, .buy:focus-visible, .switch button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.btn:focus-visible, .link:focus-visible, .buy:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 .btn .arr { font-size: 14px; letter-spacing: 0; }
 
 .content {
@@ -118,25 +121,18 @@ h1 { margin: 0; font-weight: 400; }
 .visual { position: absolute; z-index: 1; bottom: 0; margin: 0; pointer-events: none; }
 .visual img { width: 100%; height: 100%; object-fit: contain; object-position: right bottom; display: block; }
 .visual-philosopher { right: 4vw; height: min(86%, 820px); aspect-ratio: 1266 / 1700; max-width: 44vw; }
-.visual-apollo { right: 3vw; height: min(86%, 820px); aspect-ratio: 1080 / 1700; max-width: 38vw; }
+.visual-apollo { --top: 12px; right: 3vw; height: calc(100% - var(--top)); aspect-ratio: 1080 / 1700; }   /* reaches up behind the menu band */
 .visual-hypatia { right: 0; height: min(86%, 820px); aspect-ratio: 1257 / 1700; max-width: 42vw; }   /* the cut column runs off the right edge */
 
-.switch {
-  position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 5; max-width: calc(100% - 32px); box-sizing: border-box;
-  display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px; border-radius: 10px;
-  background: var(--panel); border: 1px solid var(--line); font: 500 12px/1 var(--mono); letter-spacing: .06em;
-  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-}
-.switch .tag { color: var(--muted); padding: 0 6px 0 4px; text-transform: uppercase; letter-spacing: .14em; font-size: 10px; }
-.switch .grp { display: flex; gap: 2px; }
-.switch .sep { width: 1px; align-self: stretch; background: var(--line); margin: 2px 4px; }
-.switch button { font: inherit; color: var(--fg); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 7px 10px; cursor: pointer; }
-.switch button[aria-pressed="true"] { border-color: var(--line); background: var(--ground); }
+/* nav plates: the menu frame's ground, above the marble layer, so the band covers a statue that reaches up behind it */
+.plate { position: absolute; z-index: 2; background: var(--ground); pointer-events: none; }
 
 @media (max-width: 900px) {
   .nav { padding: 20px 20px 0; }   /* keep the lockup on the 20px grid */
   .lockup svg { height: 40px; }
-  .links .link:not(:last-child) { display: none; }
+  .nav { flex-wrap: wrap; row-gap: 20px; }
+  .links { margin-left: -12px; gap: 4px; }   /* first item's text on the 20px column */
+  .links .vr { display: none; }
   .content { padding: 80px 20px 0; min-height: 0; gap: 64px; }
   .card { width: 100%; }
   .frow { flex-wrap: wrap; }
@@ -159,16 +155,15 @@ h1 { margin: 0; font-weight: 400; }
 
   <header class="nav">
     <span class="lockup" data-cover><svg viewBox="0 9.4 342.1 91.6" role="img" aria-label="Orbio Marketplace" focusable="false"><image href="orbio-orb.webp" x="0" y="9.4" width="105" height="91.06"/><path class="wm" transform="translate(129.48 16.23)" fill="currentColor" d="M26.1577 54.3564C10.8109 54.3564 6.11557e-05 42.8652 6.11557e-05 27.216C6.11557e-05 11.5668 10.8109 1.8531e-05 26.1577 1.8531e-05C41.6557 1.8531e-05 52.3153 11.5668 52.3153 27.216C52.3153 42.8652 41.5801 54.3564 26.1577 54.3564ZM26.1577 48.9132C36.8929 48.9132 44.0749 40.1436 44.0749 27.216C44.0749 14.2884 36.8929 5.36762 26.1577 5.36762C15.4225 5.36762 8.16486 14.2884 8.16486 27.216C8.16486 40.1436 15.4225 48.9132 26.1577 48.9132ZM58.6792 12.5496C58.6792 7.03082 58.2256 3.85562 56.3356 1.20962V0.907216H74.7064C86.1976 0.907216 93.0772 6.42602 93.0772 14.5908C93.0772 21.168 88.1632 26.3844 79.8472 27.8964L100.94 53.298V53.4492H91.414L71.4556 28.6524H66.088V41.8068C66.088 47.4012 66.5416 50.4252 68.4316 53.1468V53.4492H56.3356V53.1468C58.2256 50.4252 58.6792 47.4012 58.6792 41.8068V12.5496ZM73.3456 23.5116C81.1324 23.5116 85.2148 20.1096 85.2148 14.6664C85.2148 8.92082 81.1324 5.97242 73.4212 5.97242H66.088V23.5116H73.3456ZM102.501 12.5496C102.501 7.03082 102.047 3.85562 100.157 1.20962V0.907216H119.586C131.682 0.907216 137.806 6.12362 137.806 13.608C137.806 19.656 133.119 24.2676 126.012 25.704V26.082C135.387 27.2916 140.452 32.508 140.452 38.934C140.452 46.7964 133.799 53.4492 121.325 53.4492H100.157V53.1468C102.047 50.4252 102.501 47.4012 102.501 41.8068V12.5496ZM118.906 48.384C127.222 48.384 132.514 45.1332 132.514 38.3292C132.514 31.8276 127.373 28.6524 118.452 28.6524H109.909V48.384H118.906ZM118.301 23.5872C125.785 23.5872 129.943 20.5632 129.943 14.4396C129.943 8.99642 125.71 5.97242 118.377 5.97242H109.909V23.5872H118.301ZM146.47 12.5496C146.47 7.03082 146.016 3.85562 144.126 1.20962V0.907216H156.298V1.20962C154.408 3.85562 153.954 7.03082 153.954 12.5496V41.8068C153.954 47.4012 154.408 50.4252 156.298 53.1468V53.4492H144.126V53.1468C146.016 50.4252 146.47 47.4012 146.47 41.8068V12.5496ZM186.456 54.3564C171.109 54.3564 160.299 42.8652 160.299 27.216C160.299 11.5668 171.109 1.8531e-05 186.456 1.8531e-05C201.954 1.8531e-05 212.614 11.5668 212.614 27.216C212.614 42.8652 201.879 54.3564 186.456 54.3564ZM186.456 48.9132C197.191 48.9132 204.373 40.1436 204.373 27.216C204.373 14.2884 197.191 5.36762 186.456 5.36762C175.721 5.36762 168.463 14.2884 168.463 27.216C168.463 40.1436 175.721 48.9132 186.456 48.9132Z"/><path data-for="protocol" transform="translate(174.32 86.52)" fill="currentColor" d="M4.13445 12.4802L1.75545 2.57423L1.96995 2.55473V14.1572H0.000453133V0.312226H2.73045L5.30445 10.8227H4.52445L7.09845 0.312226H9.82845V14.1572H7.85895V2.55473L8.07345 2.57423L5.69445 12.4802H4.13445ZM15.1248 14.1572L19.1808 0.312226H21.8328L25.8888 14.1572H23.7633L20.5068 2.43773L17.2503 14.1572H15.1248ZM17.3868 10.5497L18.0108 8.65823H23.0028L23.6268 10.5497H17.3868ZM31.5557 14.1572V0.312226H35.8652C37.3342 0.312226 38.4847 0.682726 39.3167 1.42373C40.1617 2.16473 40.5842 3.17223 40.5842 4.44623C40.5842 5.10923 40.4347 5.69423 40.1357 6.20123C39.8497 6.70823 39.4662 7.10473 38.9852 7.39073C38.5172 7.67673 38.0167 7.83923 37.4837 7.87823L37.4057 7.64423C38.3677 7.68323 39.0827 7.90423 39.5507 8.30723C40.0317 8.69723 40.3112 9.33423 40.3892 10.2182L40.7402 14.1572H38.6927L38.3807 10.6082C38.3417 10.1532 38.2442 9.78923 38.0882 9.51623C37.9322 9.24323 37.6917 9.04823 37.3667 8.93123C37.0417 8.81423 36.5932 8.75573 36.0212 8.75573H33.6032V14.1572H31.5557ZM33.6032 6.84473H35.8262C36.6842 6.84473 37.3407 6.64323 37.7957 6.24023C38.2507 5.83723 38.4782 5.27173 38.4782 4.54373C38.4782 3.80273 38.2507 3.23723 37.7957 2.84723C37.3407 2.44423 36.6842 2.24273 35.8262 2.24273H33.6032V6.84473ZM48.7861 9.98423V7.07873L54.1681 0.312226H56.6446L48.7861 9.98423ZM46.9336 14.1572V0.312226H48.9811V14.1572H46.9336ZM54.4021 14.1572L49.9951 7.33223L51.3991 5.92823L56.8006 14.1572H54.4021ZM63.15 14.1572V0.312226H71.652V2.24273H65.1975V6.27923H71.418V8.15123H65.1975V12.2267H71.808V14.1572H63.15ZM81.8624 14.1572V2.24273H77.8064V0.312226H87.9464V2.24273H83.8904V14.1572H81.8624ZM94.2957 14.1572V0.312226H98.5857C99.5477 0.312226 100.386 0.487726 101.101 0.838726C101.829 1.18973 102.388 1.69023 102.778 2.34023C103.181 2.97723 103.383 3.73773 103.383 4.62173C103.383 5.50573 103.181 6.27273 102.778 6.92273C102.388 7.55973 101.829 8.05373 101.101 8.40473C100.386 8.74273 99.5477 8.91173 98.5857 8.91173H96.3432V14.1572H94.2957ZM96.3432 6.98123H98.3712C99.3592 6.98123 100.087 6.77973 100.555 6.37673C101.023 5.97373 101.257 5.38873 101.257 4.62173C101.257 3.84173 101.023 3.25023 100.555 2.84723C100.087 2.44423 99.3592 2.24273 98.3712 2.24273H96.3432V6.98123ZM110.122 14.1572V0.312226H112.17V13.3772L110.922 12.2267H118.78V14.1572H110.122ZM124.272 14.1572L128.328 0.312226H130.98L135.036 14.1572H132.91L129.654 2.43773L126.397 14.1572H124.272ZM126.534 10.5497L127.158 8.65823H132.15L132.774 10.5497H126.534ZM145.304 14.4692C144.186 14.4692 143.237 14.1767 142.457 13.5917C141.69 13.0067 141.105 12.1747 140.702 11.0957C140.299 10.0167 140.098 8.73623 140.098 7.25423C140.098 5.75923 140.299 4.47223 140.702 3.39323C141.105 2.31423 141.69 1.48223 142.457 0.897226C143.237 0.299226 144.186 0.000226349 145.304 0.000226349C146.565 0.000226349 147.625 0.416226 148.483 1.24823C149.354 2.08023 149.926 3.24373 150.199 4.73873L148.054 4.85573C147.859 3.89373 147.514 3.16573 147.02 2.67173C146.539 2.16473 145.967 1.91123 145.304 1.91123C144.628 1.91123 144.063 2.11923 143.608 2.53523C143.153 2.95123 142.808 3.55573 142.574 4.34873C142.34 5.14173 142.223 6.11023 142.223 7.25423C142.223 8.38523 142.34 9.34723 142.574 10.1402C142.808 10.9202 143.153 11.5182 143.608 11.9342C144.063 12.3502 144.628 12.5582 145.304 12.5582C146.019 12.5582 146.63 12.2852 147.137 11.7392C147.644 11.1932 147.982 10.3937 148.151 9.34073L150.277 9.43823C150.043 11.0242 149.49 12.2592 148.619 13.1432C147.748 14.0272 146.643 14.4692 145.304 14.4692ZM156.704 14.1572V0.312226H165.206V2.24273H158.752V6.27923H164.972V8.15123H158.752V12.2267H165.362V14.1572H156.704Z"/><path data-for="launchpad" transform="translate(206.48 86.52)" fill="currentColor" d="M6.56471e-05 14.1572V0.312226H2.04757V13.3772L0.799566 12.2267H8.65807V14.1572H6.56471e-05ZM14.1494 14.1572L18.2055 0.312226H20.8575L24.9135 14.1572H22.788L19.5315 2.43773L16.2749 14.1572H14.1494ZM16.4114 10.5497L17.0355 8.65823H22.0275L22.6515 10.5497H16.4114ZM35.1238 14.4692C33.6418 14.4692 32.4848 14.0142 31.6528 13.1042C30.8208 12.1942 30.4048 10.9397 30.4048 9.34073V0.312226H32.4523V9.41873C32.4523 10.4327 32.6798 11.2127 33.1348 11.7587C33.5898 12.2917 34.2528 12.5582 35.1238 12.5582C35.9948 12.5582 36.6578 12.2917 37.1128 11.7587C37.5678 11.2127 37.7953 10.4327 37.7953 9.41873V0.312226H39.8428V9.34073C39.8428 10.9397 39.4268 12.1942 38.5948 13.1042C37.7628 14.0142 36.6058 14.4692 35.1238 14.4692ZM46.1922 14.1572V0.312226H48.6882L53.2317 11.2517V0.312226H55.2402V14.1572H52.7442L48.2007 3.21773V14.1572H46.1922ZM66.3671 14.4692C65.2491 14.4692 64.3001 14.1767 63.5201 13.5917C62.7531 13.0067 62.1681 12.1747 61.7651 11.0957C61.3621 10.0167 61.1606 8.73623 61.1606 7.25423C61.1606 5.75923 61.3621 4.47223 61.7651 3.39323C62.1681 2.31423 62.7531 1.48223 63.5201 0.897226C64.3001 0.299226 65.2491 0.000226349 66.3671 0.000226349C67.6281 0.000226349 68.6876 0.416226 69.5456 1.24823C70.4166 2.08023 70.9886 3.24373 71.2616 4.73873L69.1166 4.85573C68.9216 3.89373 68.5771 3.16573 68.0831 2.67173C67.6021 2.16473 67.0301 1.91123 66.3671 1.91123C65.6911 1.91123 65.1256 2.11923 64.6706 2.53523C64.2156 2.95123 63.8711 3.55573 63.6371 4.34873C63.4031 5.14173 63.2861 6.11023 63.2861 7.25423C63.2861 8.38523 63.4031 9.34723 63.6371 10.1402C63.8711 10.9202 64.2156 11.5182 64.6706 11.9342C65.1256 12.3502 65.6911 12.5582 66.3671 12.5582C67.0821 12.5582 67.6931 12.2852 68.2001 11.7392C68.7071 11.1932 69.0451 10.3937 69.2141 9.34073L71.3396 9.43823C71.1056 11.0242 70.5531 12.2592 69.6821 13.1432C68.8111 14.0272 67.7061 14.4692 66.3671 14.4692ZM77.143 14.1572V0.312226H79.1905V6.98123L78.274 6.24023H85.528L84.6115 6.98123V0.312226H86.659V14.1572H84.6115V7.41023L85.528 8.15123H78.274L79.1905 7.41023V14.1572H77.143ZM93.3204 14.1572V0.312226H97.6104C98.5724 0.312226 99.4109 0.487726 100.126 0.838726C100.854 1.18973 101.413 1.69023 101.803 2.34023C102.206 2.97723 102.407 3.73773 102.407 4.62173C102.407 5.50573 102.206 6.27273 101.803 6.92273C101.413 7.55973 100.854 8.05373 100.126 8.40473C99.4109 8.74273 98.5724 8.91173 97.6104 8.91173H95.3679V14.1572H93.3204ZM95.3679 6.98123H97.3959C98.3839 6.98123 99.1119 6.77973 99.5799 6.37673C100.048 5.97373 100.282 5.38873 100.282 4.62173C100.282 3.84173 100.048 3.25023 99.5799 2.84723C99.1119 2.44423 98.3839 2.24273 97.3959 2.24273H95.3679V6.98123ZM107.704 14.1572L111.76 0.312226H114.412L118.468 14.1572H116.342L113.086 2.43773L109.829 14.1572H107.704ZM109.966 10.5497L110.59 8.65823H115.582L116.206 10.5497H109.966ZM124.447 14.1572V0.312226H127.82C129.042 0.312226 130.102 0.585226 130.999 1.13123C131.909 1.66423 132.604 2.45073 133.085 3.49073C133.579 4.51773 133.826 5.77223 133.826 7.25423C133.826 8.73623 133.579 9.99073 133.085 11.0177C132.604 12.0447 131.909 12.8247 130.999 13.3577C130.102 13.8907 129.042 14.1572 127.82 14.1572H124.447ZM126.494 12.2267H127.762C129.023 12.2267 129.991 11.8172 130.667 10.9982C131.356 10.1662 131.701 8.91823 131.701 7.25423C131.701 5.59023 131.356 4.34223 130.667 3.51023C129.991 2.66523 129.023 2.24273 127.762 2.24273H126.494V12.2267Z"/></svg><canvas class="orb-spin" width="112" height="100" aria-hidden="true"></canvas></span>
-    <nav class="links" data-cover data-cover-y="0" data-for="home" aria-label="Orbio">
-      <button class="link" type="button">Launchpad</button>
-      <button class="link" type="button">Protocol</button>
-    </nav>
-    <button class="btn btn-small" type="button" data-cover data-cover-y="0" data-for="protocol">Read the paper</button>
-    <nav class="links" data-cover data-cover-y="0" data-for="launchpad" aria-label="Launchpad">
-      <button class="link" type="button">Dashboard</button>
-      <button class="link" type="button">Analytics</button>
-      <button class="link" type="button">Developer</button>
-      <button class="link" type="button">Whitepaper ↗</button>
+    <nav class="links" data-cover data-cover-y="0" aria-label="Mockup">
+      <a class="link" href="#home" data-p="home">Home</a>
+      <a class="link" href="#launchpad" data-p="launchpad">Launchpad</a>
+      <a class="link" href="#protocol" data-p="protocol">Protocol</a>
+      <span class="vr" aria-hidden="true"></span>
+      <span class="mode" role="group" aria-label="Theme">
+        <button class="link" type="button" data-v="marble" aria-pressed="true">Light</button>
+        <button class="link" type="button" data-v="void" aria-pressed="false">Dark</button>
+      </span>
     </nav>
   </header>
 
@@ -236,21 +231,6 @@ h1 { margin: 0; font-weight: 400; }
 
 </main>
 
-<div class="switch" id="switch">
-  <span class="tag">Mockup</span>
-  <div class="grp" role="group" aria-label="Page">
-    <button type="button" data-p="home" aria-pressed="false">Home</button>
-    <button type="button" data-p="launchpad" aria-pressed="false">Launchpad</button>
-    <button type="button" data-p="protocol" aria-pressed="true">Protocol</button>
-  </div>
-  <span class="sep" aria-hidden="true"></span>
-  <div class="grp" role="group" aria-label="Variant">
-    <button type="button" data-v="marble" aria-pressed="true">Marble</button>
-    <button type="button" data-v="void" aria-pressed="false">Void</button>
-  </div>
-  <span class="sep" aria-hidden="true"></span>
-  <button type="button" id="pause">Pause</button>
-</div>
 
 <script>
 (() => {
@@ -346,10 +326,10 @@ h1 { margin: 0; font-weight: 400; }
     const add = q => { if (q.width > 0 && q.height > 0) { l = Math.min(l, q.left); t = Math.min(t, q.top); r = Math.max(r, q.right); b = Math.max(b, q.bottom); } };
     const range = document.createRange(), walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     for (let n = walk.nextNode(); n; n = walk.nextNode()) {
-      if (!n.nodeValue.trim() || n.parentElement.closest(".sr, button")) continue;
+      if (!n.nodeValue.trim() || n.parentElement.closest(".sr, button, a")) continue;
       range.selectNodeContents(n); for (const q of range.getClientRects()) add(q);
     }
-    const solid = el.matches("button, svg, img, .card, .lockup") ? [el] : el.querySelectorAll("button, svg, img, .card, .mark");
+    const solid = el.matches("button, a, svg, img, .card, .lockup") ? [el] : el.querySelectorAll("button, a, svg, img, .card, .mark");
     for (const s of solid) add(s.getBoundingClientRect());
     return l === Infinity ? el.getBoundingClientRect() : { left: l, top: t, right: r, bottom: b };
   }
@@ -357,7 +337,7 @@ h1 { margin: 0; font-weight: 400; }
   // vertical air), rounded out to the grid. The left edge comes from the element's own box, not its ink, so every
   // frame in the column shares one left edge (the headline marker's small overhang sits inside the air cell).
   function measureCovers() {
-    const hr = hero.getBoundingClientRect(), stack = []; covers = []; cleared.fill(0);
+    const hr = hero.getBoundingClientRect(), stack = [], navCovers = []; let band = null; covers = []; cleared.fill(0);
     for (const el of document.querySelectorAll("[data-cover]")) {
       if (!el.getClientRects().length) continue;
       const b = contentRect(el), left = Math.max(b.left, el.getBoundingClientRect().left), ay = el.dataset.coverY !== undefined ? +el.dataset.coverY : 1;
@@ -366,6 +346,8 @@ h1 { margin: 0; font-weight: 400; }
                  Math.min(cols, Math.ceil((b.right - hr.left) / CELL) + 1), Math.min(rows, Math.ceil(bottom / CELL) + ay)];
       covers.push(c);
       if (el.closest(".content")) stack.push({ c, top, bottom });
+      if (el.closest(".nav")) navCovers.push(c);
+      if (el.classList.contains("links")) band = c;
     }
     // Stacked frames in the text column sit exactly one grid row apart (headline / paragraph): a wider gap pulls the
     // lower frame up; a narrower one trims air (never ink), first under the upper frame, then over the lower one.
@@ -377,6 +359,33 @@ h1 { margin: 0; font-weight: 400; }
       while (b.c[1] - a.c[3] < 1 && (b.c[1] + 1) * CELL <= b.top) b.c[1]++;
     }
     for (const [x0, y0, x1, y1] of covers) for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) cleared[y * cols + x] = 1;
+    placePlates(navCovers); placeApollo(band);
+  }
+
+  // The nav frames also get a ground-coloured plate above the marble layer (inside the grid line, like the knock-out),
+  // so the menu band covers whatever reaches up behind it.
+  const plates = [], navEl = document.querySelector(".nav");
+  function placePlates(list) {
+    const lw = Math.max(1, Math.round(dpr)) / dpr;
+    list.forEach(([x0, y0, x1, y1], i) => {
+      let p = plates[i];
+      if (!p) { p = document.createElement("div"); p.className = "plate"; p.setAttribute("aria-hidden", "true"); hero.insertBefore(p, navEl); plates.push(p); }
+      p.hidden = false;
+      p.style.left = x0 * CELL + lw + "px"; p.style.top = y0 * CELL + lw + "px";
+      p.style.width = (x1 - x0) * CELL - lw + "px"; p.style.height = (y1 - y0) * CELL - lw + "px";
+    });
+    for (let i = list.length; i < plates.length; i++) plates[i].hidden = true;
+  }
+
+  // Launchpad on desktop: Apollo stands full height and his orb tucks under the menu band. His left edge (the ring tip)
+  // goes 12px inside the band's left end; he may run off the right edge, but his head (which ends at 85% of his
+  // width) stays at least 20px inside.
+  const apollo = document.querySelector(".visual-apollo");
+  function placeApollo(band) {
+    apollo.style.right = "";
+    if (page !== "launchpad" || !band || matchMedia("(max-width: 900px)").matches) return;
+    const w = apollo.getBoundingClientRect().width, hw = hero.getBoundingClientRect().width;
+    apollo.style.right = Math.max(20 - 0.15 * w, hw - (band[0] * CELL + 12) - w) + "px";
   }
 
   function paint() {
@@ -446,22 +455,21 @@ h1 { margin: 0; font-weight: 400; }
   hero.addEventListener("pointermove", e => { const r = hero.getBoundingClientRect(); pointer = { x: e.clientX - r.left, y: e.clientY - r.top, t: performance.now() }; });
   hero.addEventListener("pointerleave", () => { pointer.t = -1e9; });
 
-  const sw = document.getElementById("switch"), pauseBtn = document.getElementById("pause"), lockupSvg = document.querySelector(".lockup svg");
+  const lockupSvg = document.querySelector(".lockup svg");
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } } };
-  function mark(attr, val) { for (const b of sw.querySelectorAll("[" + attr + "]")) b.setAttribute("aria-pressed", String(b.getAttribute(attr) === val)); }
-  function setVariant(k) { variant = k; root.dataset.variant = k; mark("data-v", k); store.set("orbio-hero-variant-v2", k); paint(); }
-  function setPage(k, fromHash) {
-    page = k; root.dataset.page = k; mark("data-p", k);
+  // The navbar is the mockup's control panel: page links (hash) and Light / Dark.
+  function markNav() {
+    for (const a of document.querySelectorAll(".links [data-p]")) { if (a.dataset.p === page) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
+    for (const b of document.querySelectorAll(".links [data-v]")) b.setAttribute("aria-pressed", String(b.dataset.v === variant));
+  }
+  function setVariant(k) { variant = k; root.dataset.variant = k; markNav(); store.set("orbio-hero-variant-v2", k); paint(); }
+  function setPage(k) {
+    page = k; root.dataset.page = k; markNav();
     lockupSvg.setAttribute("aria-label", PAGES[k].label);
-    if (!fromHash) history.replaceState(null, "", "#" + k);
     layout();                                  // new seed, new covers (the text blocks differ per view)
   }
-  for (const b of sw.querySelectorAll("[data-v]")) b.addEventListener("click", () => setVariant(b.dataset.v));
-  for (const b of sw.querySelectorAll("[data-p]")) b.addEventListener("click", () => setPage(b.dataset.p));
-  function setPlaying(p) { playing = p; pauseBtn.textContent = p ? "Pause" : "Play"; }
-  pauseBtn.addEventListener("click", () => setPlaying(!playing));
-  window.addEventListener("keydown", e => { if ((e.key === "h" || e.key === "H") && !e.metaKey && !e.ctrlKey) sw.hidden = !sw.hidden; });
-  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (PAGES[h] && h !== page) setPage(h, true); });
+  for (const b of document.querySelectorAll(".links [data-v]")) b.addEventListener("click", () => setVariant(b.dataset.v));
+  window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (PAGES[h] && h !== page) setPage(h); });
   let rt = 0; const relayout = () => { clearTimeout(rt); rt = setTimeout(layout, 120); };
   window.addEventListener("resize", relayout);
   if (window.ResizeObserver) new ResizeObserver(relayout).observe(hero);
@@ -493,8 +501,7 @@ h1 { margin: 0; font-weight: 400; }
   variant = savedVariant === "void" ? "void" : "marble";
   page = PAGES[hashPage] ? hashPage : "protocol";
   root.dataset.variant = variant; root.dataset.page = page;
-  mark("data-v", variant); mark("data-p", page); lockupSvg.setAttribute("aria-label", PAGES[page].label);
-  setPlaying(playing);
+  markNav(); lockupSvg.setAttribute("aria-label", PAGES[page].label);
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measureCovers(); paint(); });
   if (window.ResizeObserver) {   // covers follow their blocks when they reflow (a web font swapping in, a new wrap)
