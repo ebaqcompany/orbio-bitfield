@@ -53,7 +53,7 @@
 html, body { height: 100%; }
 body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(--sans); }
 
-.hero { position: relative; min-height: 100%; overflow: hidden; isolation: isolate; }
+.hero { position: relative; min-height: 100%; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; }
 #field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
 
 .nav { position: relative; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 40px 60px 0; }
@@ -82,9 +82,9 @@ body { margin: 0; background: var(--ground); color: var(--fg); font-family: var(
 .btn { transition: background-color .16s cubic-bezier(.23, 1, .32, 1), border-color .16s cubic-bezier(.23, 1, .32, 1), color .16s cubic-bezier(.23, 1, .32, 1); }
 .btn:focus-visible, .link:focus-visible, .buy:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-.content {
-  position: relative; z-index: 2; display: grid; gap: 64px; align-content: center;
-  min-height: calc(100% - 100px); padding: 120px 60px 140px; box-sizing: border-box; max-width: 940px;
+.content {   /* text anchored bottom-left: 60px from the bottom, like the 60px left margin */
+  position: relative; z-index: 2; display: grid; gap: 64px; align-content: end;
+  flex: 1 0 auto; padding: 120px 60px 60px; box-sizing: border-box; max-width: 940px;
 }
 .block { justify-self: start; }
 .eyebrow { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 28px; font: 500 12px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--eyebrow); }
@@ -132,7 +132,7 @@ h1 { margin: 0; font-weight: 400; }
   .lockup svg { height: 40px; }
   .nav { flex-wrap: wrap; row-gap: 20px; }
   .links { margin-left: -12px; gap: 4px; }   /* first item's text on the 20px column */
-  .content { padding: 80px 20px 0; min-height: 0; gap: 64px; }
+  .content { padding: 80px 20px 0; flex: none; gap: 64px; }
   .card { width: 100%; }
   .frow { flex-wrap: wrap; }
   .fcol-amount { flex: 0 0 104px; }
