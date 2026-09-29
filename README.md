@@ -13,10 +13,11 @@ The field data comes from `tools/patterns/bitfield.py` in the brand project.
 
 Static single file: `index.html`, no build step.
 
-## Hero mockups (Protocol + Launchpad)
+## Hero mockups (Home + Launchpad + Protocol)
 
 `protocol-hero/` holds both sub-brand heroes on a dimmed 20px bit field. Text blocks knock the field out on whole cells.
 
+- **Home** (`#home`, or `home-hero/`): ORBIO master lockup, Vein accent, marble Hypatia, the Buy credits card framed by construction guides
 - **Protocol** (`#protocol`): ORBIO MARKETPLACE lockup, Brass, marble hand holding CREDIT
 - **Launchpad** (`#launchpad`, or `launchpad-hero/`): ORBIO LAUNCHPAD lockup, Celeste, marble Apollo raising the orb
 
