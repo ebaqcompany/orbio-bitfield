@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* Layout: one hero on a 20px bit field. Text blocks knock the field out on whole cells (like a printed
+/* Layout: one hero on a 20px bit field whose tints flow like a pixelated gradient. Text blocks knock the field out on whole cells (like a printed
    grid with type set in cleared boxes); a marble figure leads at right. Three views share one layout:
    Home = ORBIO master (primary palette, Vein accent) · Launchpad = ORBIO LAUNCHPAD (Celeste) ·
    Protocol = ORBIO MARKETPLACE (Brass). Marble is the default variant, Void the dark one. */
@@ -269,28 +269,50 @@ h1 { margin: 0; font-weight: 400; }
   let variant = "marble", page = "protocol", playing = !reduce, pal;
   let W = 0, H = 0, dpr = 1, cols = 0, rows = 0, n = 0;
   let level, bits, cleared, glint, covers = [];
+  let seedMix = 0, ft = 0, flowAcc = 0, stat, fbuf, thr = [];
+  const dirty = new Set();
   let pointer = { x: -1e4, y: -1e4, t: -1e9 };
   const active = new Set();
   let carry = 0, last = performance.now();
 
-  function rng(seed) { let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
   const smooth = x => x * x * (3 - 2 * x);
-  // Multi-octave value noise over the grid, then quantile levels so the density is identical at any size.
-  function field(seed) {
-    const r = rng(seed), f = new Float32Array(n);
-    for (const [px, amp] of [[260, 1], [120, .5], [CELL, .22]]) {
-      const lx = Math.max(2, Math.ceil(cols * CELL / px) + 1), ly = Math.max(2, Math.ceil(rows * CELL / px) + 1);
-      const lat = new Float32Array(lx * ly); for (let i = 0; i < lat.length; i++) lat[i] = r();
-      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-        const u = x * CELL / px, v = y * CELL / px, x0 = Math.floor(u), y0 = Math.floor(v), fx = smooth(u - x0), fy = smooth(v - y0);
-        const a = lat[y0 * lx + x0], b = lat[y0 * lx + x0 + 1], c = lat[(y0 + 1) * lx + x0], d = lat[(y0 + 1) * lx + x0 + 1];
-        f[y * cols + x] += amp * ((a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy);
-      }
+  // Flowing tint field: 3D value noise over (x, y, time), drifting and morphing slowly, snapped to 5 levels.
+  function h3(x, y, z) {
+    let h = (Math.imul(x, 374761393) ^ Math.imul(y, 668265263) ^ Math.imul(z, 1440662683) ^ seedMix) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  }
+  function vnoise(x, y, z) {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const u = smooth(x - xi), v = smooth(y - yi), w = smooth(z - zi);
+    const a = h3(xi, yi, zi), b = h3(xi + 1, yi, zi), c = h3(xi, yi + 1, zi), d = h3(xi + 1, yi + 1, zi);
+    const e = h3(xi, yi, zi + 1), f = h3(xi + 1, yi, zi + 1), g = h3(xi, yi + 1, zi + 1), k = h3(xi + 1, yi + 1, zi + 1);
+    const p = a + (b - a) * u, q = c + (d - c) * u, r = e + (f - e) * u, s = g + (k - g) * u;
+    const m0 = p + (q - p) * v, m1 = r + (s - r) * v;
+    return m0 + (m1 - m0) * w;
+  }
+  function sample(t) {
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const i = y * cols + x, px = x * CELL, py = y * CELL;
+      fbuf[i] = vnoise(px / 280 + t * .035, py / 280 - t * .0245, t * .056)
+              + .5 * vnoise(px / 120 - t * .049, py / 120 + t * .035, 50 + t * .098)
+              + .18 * stat[i];                          // a fixed per-cell grain keeps it pixelated, not blurry
     }
-    const order = Array.from(f.keys()).sort((a, b) => f[a] - f[b]), out = new Uint8Array(n);
-    let edge = 0, k = 0; const edges = SHARES.map(s => (edge += s) * n);
-    order.forEach((idx, i) => { while (i >= edges[k] && k < SHARES.length - 1) k++; out[idx] = k; });
-    return out;
+  }
+  function calibrate() {                                // thresholds so each level keeps its share of cells
+    const s = Float32Array.from(fbuf).sort(); let acc = 0; thr = [];
+    for (let k = 0; k < SHARES.length - 1; k++) { acc += SHARES[k]; thr.push(s[Math.min(n - 1, Math.floor(acc * n))]); }
+  }
+  function quantize(i) { const f = fbuf[i]; let L = 0; while (L < thr.length && f > thr[L]) L++; return L; }
+  function flowStep() {
+    sample(ft);
+    for (let i = 0; i < n; i++) {
+      if (cleared[i]) continue;
+      const L = quantize(i), cur = level[i];
+      if (L === cur) continue;
+      if (L > cur ? fbuf[i] < thr[L - 1] + .018 : fbuf[i] > thr[L] - .018) continue;   // hysteresis: no edge flicker
+      level[i] = L; repaintCell(i); dirty.add(i);
+    }
   }
 
   function layout() {
@@ -298,7 +320,11 @@ h1 { margin: 0; font-weight: 400; }
     const r = hero.getBoundingClientRect(); W = r.width; H = r.height;
     canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr); bg.width = canvas.width; bg.height = canvas.height;
     cols = Math.ceil(W / CELL); rows = Math.ceil(H / CELL); n = cols * rows;
-    level = field(PAGES[page].seed); bits = new Uint8Array(n); cleared = new Uint8Array(n); glint = new Float64Array(n).fill(-1e9);
+    seedMix = PAGES[page].seed | 0;
+    level = new Uint8Array(n); fbuf = new Float32Array(n); stat = new Float32Array(n);
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) stat[y * cols + x] = h3(x, y, 999);
+    sample(ft); calibrate(); for (let i = 0; i < n; i++) level[i] = quantize(i);
+    bits = new Uint8Array(n); cleared = new Uint8Array(n); glint = new Float64Array(n).fill(-1e9);
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) bits[y * cols + x] = BITS.charCodeAt((x + 5 * y) % 48) === 49 ? 1 : 0;
     measureCovers(); paint();
   }
@@ -338,6 +364,15 @@ h1 { margin: 0; font-weight: 400; }
     for (let i = 0; i < n; i++) if (!cleared[i]) { ctx.globalAlpha = alpha(i, now); ctx.fillText(bits[i] ? "1" : "0", (i % cols) * CELL + CELL / 2, ((i / cols) | 0) * CELL + CELL / 2 + .5); }
     ctx.globalAlpha = 1;
   }
+  function repaintCell(i) {
+    const x = i % cols, y = (i / cols) | 0, cs = CELL * dpr, lw = Math.max(1, Math.round(dpr));
+    const x0 = Math.round(x * cs), y0 = Math.round(y * cs), w = Math.round((x + 1) * cs) - x0, h = Math.round((y + 1) * cs) - y0;
+    bgx.setTransform(1, 0, 0, 1, 0, 0); bgx.globalAlpha = 1; bgx.fillStyle = pal.levels[level[i]]; bgx.fillRect(x0, y0, w, h);
+    bgx.globalAlpha = pal.la; bgx.fillStyle = pal.line;
+    if (x > 0) bgx.fillRect(x0, y0, lw, h);
+    if (y > 0) bgx.fillRect(x0, y0, w, lw);
+    bgx.globalAlpha = 1;
+  }
   function alpha(i, now) { const g = (now - glint[i]) / GLINT; if (g < 0 || g >= 1) return pal.da; const e = 1 - g; return pal.da + (pal.pk - pal.da) * e * e; }
   function drawCell(i, now) {
     const x = i % cols, y = (i / cols) | 0, cs = CELL * dpr;
@@ -351,6 +386,8 @@ h1 { margin: 0; font-weight: 400; }
   function frame(now) {
     const dt = Math.min(.1, (now - last) / 1000); last = now;
     if (playing) {
+      ft += dt; flowAcc += dt;
+      if (flowAcc >= 1 / 12) { flowAcc = 0; flowStep(); }   // the tints flow at 12 steps a second
       carry += .05 * n * dt; let k = Math.floor(carry); carry -= k;       // calm: each cell flips every ~20 s
       while (k-- > 0) flip((Math.random() * n) | 0, now);
       if (now - pointer.t < 1200) {
@@ -362,6 +399,8 @@ h1 { margin: 0; font-weight: 400; }
         }
       }
     }
+    for (const i of dirty) drawCell(i, now);
+    dirty.clear();
     for (const i of active) { drawCell(i, now); if (now - glint[i] >= GLINT) active.delete(i); }
     requestAnimationFrame(frame);
   }
