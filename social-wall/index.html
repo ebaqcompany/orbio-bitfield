@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orbio Social Wall</title>
+<style>
+/* The six social templates (Figma 525:5) as a 5-column wall on Void. Odd columns scroll up, even columns down, all
+   with one period, so the whole page repeats exactly every --period: a perfect loop, no zoom. Stage = 1920×1080. */
+:root { --void: #0B0B0C; --period: 40s; --colw: 352px; --gap: 24px; }
+html, body { height: 100%; margin: 0; background: var(--void); overflow: hidden; }
+.stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 50% 50%; }
+.col { position: absolute; top: 0; width: var(--colw); }
+.track { display: flex; flex-direction: column; gap: var(--gap); will-change: transform;
+         animation: up var(--period) linear infinite; animation-delay: var(--delay, 0s); }
+.col.down .track { animation-name: down; }
+@keyframes up   { from { transform: translate3d(0, 0, 0); }                    to { transform: translate3d(0, calc(-1 * var(--seq)), 0); } }
+@keyframes down { from { transform: translate3d(0, calc(-1 * var(--seq)), 0); } to { transform: translate3d(0, 0, 0); } }
+.track img { display: block; width: var(--colw); height: auto; outline: 1px solid rgba(255, 250, 238, .12); outline-offset: -1px; }
+@media (prefers-reduced-motion: reduce) { .track { animation-play-state: paused; } }
+</style>
+</head>
+<body>
+<main class="stage" id="stage" aria-label="Orbio social templates"></main>
+<script>
+(() => {
+  const P = [
+    ["p1-ui-card.png", 568, "Frontier models at 80% off: pricing card"],
+    ["p2-credits.png", 568, "$34,100 credits distributed"],
+    ["p3-build-week.png", 568, "Build Week, updated"],
+    ["p4-compute-market.png", 540, "Get into the compute market"],
+    ["p5-introducing.png", 540, "Introducing Orbio: AI credits at a discount"],
+    ["p6-atlas.png", 540, "Same models, for less"],
+  ];
+  const COLW = 352, GAP = 24, M = (1920 - (5 * COLW + 4 * GAP)) / 2;
+  const ROT = [0, 3, 1, 4, 2];                      // each column starts on a different poster (same order as the Figma wall)
+  const PHASE = [0, .37, .12, .61, .83];            // where in the loop each column starts
+  const stage = document.getElementById("stage");
+  const seq = P.reduce((h, p) => h + COLW * 710 / p[1] + GAP, 0);   // one full set of six, gaps included
+  const period = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--period"));
+  for (let c = 0; c < 5; c++) {
+    const col = document.createElement("div"); col.className = "col" + (c % 2 ? " down" : ""); col.style.left = M + c * (COLW + GAP) + "px";
+    const track = document.createElement("div"); track.className = "track";
+    track.style.setProperty("--seq", seq + "px"); track.style.setProperty("--delay", -PHASE[c] * period + "s");
+    for (let k = 0; k < 12; k++) {                  // two sets: the second covers the seam while the first scrolls out
+      const [src, w, alt] = P[(ROT[c] + k) % 6], img = new Image();
+      img.src = "img/" + src; img.width = COLW; img.height = COLW * 710 / w; img.alt = k < 6 ? alt : ""; img.decoding = "async";
+      track.appendChild(img);
+    }
+    col.appendChild(track); stage.appendChild(col);
+  }
+  const fit = () => { stage.style.transform = `translate(-50%, -50%) scale(${Math.max(innerWidth / 1920, innerHeight / 1080)})`; };
+  addEventListener("resize", fit); fit();
+})();
+</script>
+</body>
+</html>
