@@ -23,4 +23,8 @@ Static single file: `index.html`, no build step.
 
 Marble is the default variant; Void is the dark one. The switch sits bottom-right (`H` hides it). Copy is verbatim from orbio.so.
 
+### Reveal variant (no full-width grid)
+
+`protocol-hero/reveal.html` is the same four heroes without the full-width field. The bits rest faintly around each statue, and the cursor wakes them as it moves: they light up with their grid square, sometimes flip, and fade within about 1.5 s, leaving a trail. No knock-out boxes, no drop shadows. Shortcuts: `home-reveal/`, `launchpad-reveal/`, `protocol-reveal/`, `incognito-reveal/`. The original flowing-field version stays at `protocol-hero/` for comparison.
+
 The headlines and wordmark are outlined from ABC Arizona Flare (Dinamo trial). License it before production use.
