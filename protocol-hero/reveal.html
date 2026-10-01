@@ -25,6 +25,7 @@
   --field: rgba(243, 239, 231, .6);
   --label: #4F473B;
   --focus: #FF893F;           /* Vein */
+  --rule: rgba(20, 18, 14, .14);   /* reveal: the hero's frame lines (rails + nav line) */
   --display-h: clamp(34px, 5.1vw, 78px);
   --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -43,6 +44,7 @@
   --card-line: rgba(255, 250, 238, .14);
   --field: rgba(255, 250, 238, .05);
   --label: rgba(255, 250, 238, .66);
+  --rule: rgba(255, 250, 238, .13);
   color-scheme: dark;
 }
 [hidden] { display: none !important; }
@@ -123,6 +125,10 @@ h1 { margin: 0; font-weight: 400; }
 .visual-apollo { top: 120px; bottom: auto; right: 4vw; height: calc((100% - 120px) * 1.3); aspect-ratio: 1080 / 1700; }   /* cropped in: starts below the menu, 1.3× so the bottom edge cuts at the hips */
 .visual-hypatia { right: 4vw; height: min(86%, 820px); aspect-ratio: 1282 / 1700; max-width: 42vw; }   /* the whole column in frame, 4vw from the edge */
 .visual-veiled { right: 4vw; height: min(86%, 820px); aspect-ratio: 1028 / 1700; max-width: 44vw; }
+
+/* reveal: hairlines that frame the hero on the 20px grid (two rails 2 cells in, a line one cell under the logo frame) */
+.rule { position: absolute; z-index: 0; background: var(--rule); pointer-events: none; }
+:root[data-field="reveal"] .ctas .btn { height: 41px; }   /* 2 cells + the shared 1px edge, so the CTA row sits between grid lines */
 
 /* nav plates: the menu frame's ground, above the marble layer, so the band covers a statue that reaches up behind it */
 .plate { position: absolute; z-index: 2; background: var(--ground); pointer-events: none; }
@@ -263,9 +269,9 @@ h1 { margin: 0; font-weight: 400; }
   };
   function palette() {
     const p = PAGES[page];
-    if (MODE === "reveal") return variant === "void"   // ink digits only: no tints; dormant = three faint strengths, pk = under the cursor
-      ? { digit: p.dark, dorm: [.10, .16, .24], pk: .62, line: "#FFFAEE", la: .07 }
-      : { digit: "#14120E", dorm: [.07, .12, .18], pk: .5, line: "#14120E", la: .09 };
+    if (MODE === "reveal") return variant === "void"   // ink digits only: no tints, no grid lines; dormant = three faint strengths, pk = under the cursor
+      ? { digit: p.dark, dorm: [.10, .16, .24], pk: .62 }
+      : { digit: "#14120E", dorm: [.07, .12, .18], pk: .5 };
     return variant === "void"
       ? { ground: "#0B0B0C", levels: [0, .025, .05, .08, .12].map(t => mix("#0B0B0C", p.dark, t)), digit: p.dark, da: .13, pk: .6, line: "#FFFAEE", la: .035 }
       : { ground: "#FFFAEE", levels: p.steps.map(t => mix("#FFFAEE", p.tint, t)), digit: "#14120E", da: .11, pk: .55, line: "#14120E", la: .05 };
@@ -344,11 +350,51 @@ h1 { margin: 0; font-weight: 400; }
   }
 
   // ---------------------------------------------------------------- reveal mode
-  // The field is there but asleep. Around the statue a faint snippet rests (the "emit" move from the social set: dense
-  // on the silhouette, eroding with distance, mostly upward). The cursor wakes the cells it passes: they light up to pk,
-  // pick up their hairline box, sometimes flip, and fade over TRAIL seconds, so the pointer leaves a trail of bits.
+  // The field is there but asleep, and the fine 20px grid itself is never drawn (Arek, 2026-10-01): only its bits and the
+  // frame lines that sit on it. Around the statue a faint snippet rests (the "emit" move from the social set: dense on the
+  // silhouette, eroding with distance, mostly upward). The cursor wakes the cells it passes: they light up to pk, sometimes
+  // flip, and fade over TRAIL seconds, so the pointer leaves a trail of bits.
   const TRAIL = 1.5, REACH = 5, STAMP_R = 5 * CELL;
   let energy, dorm, grain2, dormList = [], lastStamp = null, pathPts = [];
+
+  // Frame lines on the grid: two rails, a line under the logo frame, and the UI box's top and bottom edges.
+  const rules = {}, bounds = { top: 0, left: 0, right: 1e9 };
+  function rule(name) {
+    let el = rules[name];
+    if (!el) { el = document.createElement("div"); el.className = "rule"; el.setAttribute("aria-hidden", "true"); canvas.after(el); rules[name] = el; }
+    return el;
+  }
+  function setBox(el, x, y, w, h) { el.style.left = x + "px"; el.style.top = y + "px"; el.style.width = w + "px"; el.style.height = h + "px"; }
+  function placeRules() {
+    const hr = hero.getBoundingClientRect(), wide = W >= 900;
+    let nb = 0; for (const el of document.querySelectorAll(".nav .lockup, .nav .links")) nb = Math.max(nb, el.getBoundingClientRect().bottom - hr.top);
+    bounds.top = Math.ceil((nb + CELL) / CELL) * CELL;                            // one cell under the logo frame: y 120 on desktop
+    bounds.left = wide ? 2 * CELL : 0; bounds.right = wide ? Math.floor((W - 2 * CELL) / CELL) * CELL : cols * CELL;   // rails 2 cells in
+    setBox(rule("nav"), 0, bounds.top, W, 1);
+    const l = rule("left"), r = rule("right"); l.hidden = r.hidden = !wide;
+    if (wide) { setBox(l, bounds.left, 0, 1, H); setBox(r, bounds.right, 0, 1, H); }
+    // the UI box (Buy credits card, or the CTA row) is marked by its top and bottom edges carried across the whole hero,
+    // like the construction lines on the Axiom slide, as solid hairlines
+    const ui = [...document.querySelectorAll("#card, .ctas")].find(el => el.getClientRects().length);
+    const t = rule("ui-top"), b = rule("ui-bottom"); t.hidden = b.hidden = !(wide && ui);
+    if (wide && ui) {
+      const q = (ui.matches(".ctas") ? ui.querySelector(".btn") : ui).getBoundingClientRect();
+      setBox(t, 0, Math.round(q.top - hr.top), W, 1); setBox(b, 0, Math.round(q.bottom - hr.top) - 1, W, 1);
+    }
+  }
+  // Snap the bottom-anchored column to the lattice: the content ends one pixel past a grid line and the UI box is a whole
+  // number of cells (+1 px), so its 1px edges (and the lines carried from them) sit exactly on the grid.
+  function snapToGrid() {
+    const content = document.querySelector(".content"), card = document.getElementById("card");
+    if (W < 900) { content.style.paddingBottom = ""; card.style.minHeight = card.style.width = ""; return; }
+    const pb = 60 + (H % CELL) - 1, want = pb + "px";
+    if (content.style.paddingBottom !== want) content.style.paddingBottom = want;
+    if (card.getClientRects().length) {
+      card.style.minHeight = ""; const h0 = card.offsetHeight;
+      card.style.minHeight = Math.ceil((h0 - 1) / CELL) * CELL + 1 + "px";
+      card.style.width = Math.round(Math.min(560, W - 120) / CELL) * CELL + 1 + "px";
+    }
+  }
   const live = new Set();
   function visibleStatue() {
     for (const f of document.querySelectorAll(".visual")) if (f.getClientRects().length) return f.querySelector("img");
@@ -395,16 +441,11 @@ h1 { margin: 0; font-weight: 400; }
       dorm[i] = pal.dorm[sc > .62 ? 2 : sc > .45 ? 1 : 0]; dormList.push(i);
     }
   }
-  function lineAlpha(i) { return cleared[i] ? 0 : pal.la * Math.pow(energy[i], 1.8); }
   function drawR(i) {
-    const x = i % cols, y = (i / cols) | 0, cs = CELL * dpr, lw = Math.max(1, Math.round(dpr));
+    const x = i % cols, y = (i / cols) | 0, cs = CELL * dpr;
     const x0 = Math.round(x * cs), y0 = Math.round(y * cs), w = Math.round((x + 1) * cs) - x0, h = Math.round((y + 1) * cs) - y0;
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(x0, y0, w, h);
     if (cleared[i]) return;
-    const le = x > 0 ? Math.max(lineAlpha(i), lineAlpha(i - 1)) : 0, te = y > 0 ? Math.max(lineAlpha(i), lineAlpha(i - cols)) : 0;
-    ctx.fillStyle = pal.line;
-    if (le > .003) { ctx.globalAlpha = le; ctx.fillRect(x0, y0, lw, h); }       // a cell owns its left and top edges
-    if (te > .003) { ctx.globalAlpha = te; ctx.fillRect(x0, y0, w, lw); }
     const a = Math.max(dorm[i], pal.pk * Math.pow(energy[i], 1.8));
     if (a > .004) {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.globalAlpha = a; ctx.fillStyle = pal.digit;
@@ -412,7 +453,7 @@ h1 { margin: 0; font-weight: 400; }
     }
     ctx.globalAlpha = 1;
   }
-  function touch(i) { dirty.add(i); if ((i + 1) % cols) dirty.add(i + 1); if (i + cols < n) dirty.add(i + cols); }   // neighbours own the shared edges
+  function touch(i) { dirty.add(i); }
   function paintR() {
     computeDormant();                                                             // follows the statue and the covers on every repaint
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -441,9 +482,9 @@ h1 { margin: 0; font-weight: 400; }
       }
       pathPts.length = 0;
       for (const i of live) {
-        energy[i] -= dt / TRAIL;
-        if (Math.random() < .5 * dt) bits[i] ^= 1;                                // awake bits compute a little
-        if (energy[i] <= 0) { energy[i] = 0; live.delete(i); }
+        energy[i] = Math.max(0, energy[i] - dt / TRAIL);
+        if (energy[i] > 0 && Math.random() < .5 * dt) bits[i] ^= 1;               // awake bits compute a little
+        if (energy[i] <= 0) live.delete(i);
         touch(i);
       }
       carry += .05 * dormList.length * dt; let k = Math.floor(carry); carry -= k;   // the resting snippet flips calmly
@@ -473,7 +514,13 @@ h1 { margin: 0; font-weight: 400; }
   function measureCovers() {
     // reveal: no knock-outs and no nav plates; the bits pass behind the type and the menu (Arek, 2026-10-01: "we don't
     // need the rectangles behind content to separate it from the BG now")
-    if (MODE === "reveal") { covers = []; cleared.fill(0); placePlates([]); return; }
+    if (MODE === "reveal") {
+      covers = []; cleared.fill(0); placePlates([]); snapToGrid(); placeRules();
+      // the bits live inside the frame: below the nav line and between the rails (the nav band and the gutters stay clean)
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++)
+        if (y < bounds.top / CELL || x < bounds.left / CELL || x >= bounds.right / CELL) cleared[y * cols + x] = 1;
+      return;
+    }
     const hr = hero.getBoundingClientRect(), stack = [], navCovers = []; covers = []; cleared.fill(0);
     for (const el of document.querySelectorAll("[data-cover]")) {
       if (!el.getClientRects().length) continue;
@@ -629,7 +676,7 @@ h1 { margin: 0; font-weight: 400; }
 
   const hashPage = location.hash.slice(1);
   page = PAGES[hashPage] ? hashPage : "protocol"; variant = page === "incognito" ? "void" : "marble";
-  root.dataset.variant = variant; root.dataset.page = page;
+  root.dataset.variant = variant; root.dataset.page = page; root.dataset.field = MODE;
   markNav(); lockupSvg.setAttribute("aria-label", PAGES[page].label);
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measureCovers(); paint(); });
