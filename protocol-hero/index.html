@@ -274,8 +274,8 @@ h1 { margin: 0; font-weight: 400; }
   };
   function palette() {
     const p = PAGES[page];
-    if (MODE === "reveal") return variant === "void"   // ink digits only: no tints, no grid lines; dormant = three faint strengths, pk = under the cursor
-      ? { digit: p.dark, dorm: [.10, .16, .24], pk: .62 }
+    if (MODE === "reveal") return variant === "void"   // neutral digits only (ink on Marble, Marble on Void; the accent stays on the marker and button): no tints, no grid lines; dormant = three faint strengths, pk = under the cursor
+      ? { digit: "#FFFAEE", dorm: [.10, .16, .24], pk: .62 }
       : { digit: "#14120E", dorm: [.07, .12, .18], pk: .5 };
     return variant === "void"
       ? { ground: "#0B0B0C", levels: [0, .025, .05, .08, .12].map(t => mix("#0B0B0C", p.dark, t)), digit: p.dark, da: .13, pk: .6, line: "#FFFAEE", la: .035 }
