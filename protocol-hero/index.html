@@ -128,7 +128,12 @@ h1 { margin: 0; font-weight: 400; }
 
 /* reveal: hairlines that frame the hero on the 20px grid (two rails 2 cells in, a line one cell under the logo frame) */
 .rule { position: absolute; z-index: 0; background: var(--rule); pointer-events: none; }
-:root[data-field="reveal"] .ctas .btn { height: 41px; }   /* 2 cells + the shared 1px edge, so the CTA row sits between grid lines */
+/* reveal: the nav band is one square shorter at the top and the bottom: logo frame y 0–80, nav line at y 80 */
+:root[data-field="reveal"] .nav { padding-top: 20px; }
+/* reveal: the buy UI sits on the page without a container (no fill, border, padding or tab), on the same 560px column */
+:root[data-field="reveal"] .card { background: none; border: 0; padding: 0; }
+:root[data-field="reveal"] .card .tabs { display: none; }
+:root[data-field="reveal"] .card .flabel { margin-top: 0; }
 
 /* nav plates: the menu frame's ground, above the marble layer, so the band covers a statue that reaches up behind it */
 .plate { position: absolute; z-index: 2; background: var(--ground); pointer-events: none; }
@@ -368,32 +373,27 @@ h1 { margin: 0; font-weight: 400; }
   function placeRules() {
     const hr = hero.getBoundingClientRect(), wide = W >= 900;
     let nb = 0; for (const el of document.querySelectorAll(".nav .lockup, .nav .links")) nb = Math.max(nb, el.getBoundingClientRect().bottom - hr.top);
-    bounds.top = Math.ceil((nb + CELL) / CELL) * CELL;                            // one cell under the logo frame: y 120 on desktop
+    bounds.top = Math.ceil(nb / CELL) * CELL;                                    // on the logo frame's bottom edge: y 80 on desktop
     bounds.left = wide ? 2 * CELL : 0; bounds.right = wide ? Math.floor((W - 2 * CELL) / CELL) * CELL : cols * CELL;   // rails 2 cells in
     setBox(rule("nav"), 0, bounds.top, W, 1);
     const l = rule("left"), r = rule("right"); l.hidden = r.hidden = !wide;
     if (wide) { setBox(l, bounds.left, 0, 1, H); setBox(r, bounds.right, 0, 1, H); }
-    // the UI box (Buy credits card, or the CTA row) is marked by its top and bottom edges carried across the whole hero,
-    // like the construction lines on the Axiom slide, as solid hairlines
-    const ui = [...document.querySelectorAll("#card, .ctas")].find(el => el.getClientRects().length);
-    const t = rule("ui-top"), b = rule("ui-bottom"); t.hidden = b.hidden = !(wide && ui);
-    if (wide && ui) {
-      const q = (ui.matches(".ctas") ? ui.querySelector(".btn") : ui).getBoundingClientRect();
-      setBox(t, 0, Math.round(q.top - hr.top), W, 1); setBox(b, 0, Math.round(q.bottom - hr.top) - 1, W, 1);
+    // two horizontal guide rails bracket the text block across the whole hero: one a cell above the headline (or its
+    // eyebrow), one a cell below everything (the buy UI or the CTA row)
+    const blocks = [...document.querySelectorAll(".content [data-cover]")].filter(el => el.getClientRects().length);
+    const t = rule("content-top"), b = rule("content-bottom"); t.hidden = b.hidden = !(wide && blocks.length);
+    if (wide && blocks.length) {
+      let top = Infinity, bottom = -Infinity;
+      for (const el of blocks) { const q = contentRect(el); top = Math.min(top, q.top - hr.top); bottom = Math.max(bottom, q.bottom - hr.top); }
+      setBox(t, 0, Math.floor((top - CELL) / CELL) * CELL, W, 1);
+      setBox(b, 0, Math.ceil((Math.round(bottom) + CELL) / CELL) * CELL, W, 1);
     }
   }
-  // Snap the bottom-anchored column to the lattice: the content ends one pixel past a grid line and the UI box is a whole
-  // number of cells (+1 px), so its 1px edges (and the lines carried from them) sit exactly on the grid.
+  // Snap the bottom-anchored column to the lattice: the content ends on a grid line (60px or a little more from the bottom).
   function snapToGrid() {
-    const content = document.querySelector(".content"), card = document.getElementById("card");
-    if (W < 900) { content.style.paddingBottom = ""; card.style.minHeight = card.style.width = ""; return; }
-    const pb = 60 + (H % CELL) - 1, want = pb + "px";
+    const content = document.querySelector(".content");
+    const want = W < 900 ? "" : 60 + (H % CELL) + "px";
     if (content.style.paddingBottom !== want) content.style.paddingBottom = want;
-    if (card.getClientRects().length) {
-      card.style.minHeight = ""; const h0 = card.offsetHeight;
-      card.style.minHeight = Math.ceil((h0 - 1) / CELL) * CELL + 1 + "px";
-      card.style.width = Math.round(Math.min(560, W - 120) / CELL) * CELL + 1 + "px";
-    }
   }
   const live = new Set();
   function visibleStatue() {
@@ -432,6 +432,7 @@ h1 { margin: 0; font-weight: 400; }
     for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
       const i = y * cols + x;
       if (S[i] < 0 || cov[i] > .55 || cleared[i]) continue;
+      if (y < bounds.top / CELL || x < bounds.left / CELL || x >= bounds.right / CELL) continue;   // the resting snippet stays inside the frame
       const sx = S[i] % cols, sy = (S[i] / cols) | 0, dx = x - sx, dy = y - sy, len = Math.hypot(dx, dy) || 1;
       const up = Math.min(1, Math.max(0, (-dy / len + .2) / 1.2));             // rises off the figure, a little to the sides
       const d = Math.exp(-D[i] / REACH) * (.3 + .7 * up);
@@ -515,10 +516,7 @@ h1 { margin: 0; font-weight: 400; }
     // reveal: no knock-outs and no nav plates; the bits pass behind the type and the menu (Arek, 2026-10-01: "we don't
     // need the rectangles behind content to separate it from the BG now")
     if (MODE === "reveal") {
-      covers = []; cleared.fill(0); placePlates([]); snapToGrid(); placeRules();
-      // the bits live inside the frame: below the nav line and between the rails (the nav band and the gutters stay clean)
-      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++)
-        if (y < bounds.top / CELL || x < bounds.left / CELL || x >= bounds.right / CELL) cleared[y * cols + x] = 1;
+      covers = []; cleared.fill(0); placePlates([]); snapToGrid(); placeRules();   // nothing is cleared: the cursor works everywhere
       return;
     }
     const hr = hero.getBoundingClientRect(), stack = [], navCovers = []; covers = []; cleared.fill(0);
