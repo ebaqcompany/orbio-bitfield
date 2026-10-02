@@ -13,18 +13,15 @@ The field data comes from `tools/patterns/bitfield.py` in the brand project.
 
 Static single file: `index.html`, no build step.
 
-## Hero mockups (Home + Launchpad + Protocol)
+## Hero sections (Home + Launchpad + Protocol + Incognito)
 
-`protocol-hero/` holds both sub-brand heroes on a dimmed 20px bit field. Text blocks knock the field out on whole cells.
+Four Orbio website heroes in one page: `protocol-hero/reveal.html`. Switch between them from the navbar, or open one directly:
 
-- **Home** (`#home`, or `home-hero/`): ORBIO master lockup (2 grid cells tall), Vein accent, the Buy credits card, marble Hypatia; same layout as the other views
-- **Protocol** (`#protocol`): ORBIO MARKETPLACE lockup, Brass, marble hand holding CREDIT
-- **Launchpad** (`#launchpad`, or `launchpad-hero/`): ORBIO LAUNCHPAD lockup, Celeste, marble Apollo raising the orb
+- **Home:** `home-reveal/`, ORBIO master lockup, Vein accent, the Buy credits card, marble philosopher
+- **Launchpad:** `launchpad-reveal/`, ORBIO LAUNCHPAD lockup, Celeste, marble Apollo raising the orb
+- **Protocol:** `protocol-reveal/`, ORBIO MARKETPLACE lockup, Brass, marble Hypatia
+- **Incognito:** `incognito-reveal/`, ORBIO INCOGNITO lockup, Iris, veiled marble statue
 
-Marble is the default variant; Void is the dark one. The switch sits bottom-right (`H` hides it). Copy is verbatim from orbio.so.
-
-### Reveal variant (no full-width grid)
-
-`protocol-hero/reveal.html` is the same four heroes without the full-width field. The 20px grid is still there, but invisible: only its 0s and 1s show. They rest faintly around each statue, and the cursor wakes them anywhere on the hero (they light up, sometimes flip, and fade within about 1.5 s, leaving a trail). Solid hairlines on the grid mark the layout: two rails 40px in from the edges, a line under the 80px nav band, and two horizontal guide rails bracketing the copy (one above the headline, one below the buy UI or CTA row). The buy UI has no container. No knock-out boxes, no drop shadows. Shortcuts: `home-reveal/`, `launchpad-reveal/`, `protocol-reveal/`, `incognito-reveal/`. The original flowing-field version stays at `protocol-hero/` for comparison.
+The 20px bit grid is invisible: only its 0s and 1s show. They rest faintly around each statue, and the cursor wakes them anywhere on the hero (they light up, sometimes flip, and fade within about 1.5 s). Hairlines on the grid mark the layout: two rails 40px in from the edges, a line under the 80px nav band, and two guide rails bracketing the copy. `H` hides the controls. Copy is verbatim from orbio.so.
 
 The headlines and wordmark are outlined from ABC Arizona Flare (Dinamo trial). License it before production use.
